@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>爱心~</title>
+    <style>
+        html,body{
+            height:100%;margin:0;overflow:hidden;
+            font-family:"微软雅黑",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+            background:
+                radial-gradient(1200px 600px at 50% 45%, rgba(255,255,255,.65), rgba(255,255,255,0) 60%),
+                radial-gradient(circle at 50% 45%, #fff4f7 0%, #c9eaaf 100%);
+        }
+        .stage{position:relative;width:100%;height:100%;}
+        .msg{
+            position:absolute;left:50%;top:50%;
+            padding:12px 20px;border-radius:16px;
+            color:#fff;font-weight:700;
+            font-size:clamp(16px,3.5vmin,24px);/* 增大文字尺寸，提升可见性 */
+            text-shadow:0 2px 8px rgba(0,0,0,.3);/* 加深文字阴影，增强对比 */
+            opacity:0;
+            transform:translate(-50%, -50%) translate(var(--dx),var(--dy)) scale(.75) rotate(var(--rot));
+            animation: flight var(--dur) cubic-bezier(.25,.7,.3,1) var(--delay) both;
+            box-shadow:0 8px 26px rgba(0,0,0,.22);
+            will-change: transform, opacity;
+            background: var(--bg);
+            z-index: 10;/* 确保文字在顶层，不被遮挡 */
+        }
+        /* 关键修复：调整动画关键帧，让文字在"下落阶段"全程显示 */
+        @keyframes flight{
+            0%{
+                opacity:0;
+                transform:translate(-50%, -50%) translate(var(--dx),var(--dy)) scale(.75) rotate(var(--rot));
+            }
+            15%{ /* 更早显示文字 */
+                opacity:1;
+                transform:translate(-50%, -50%) translate(calc(var(--dx)*1.8),calc(var(--dy)*1.8)) scale(.9);
+            }
+            80%{ /* 下落阶段末尾仍保持文字显示状态 */
+                opacity:1;
+                transform:translate(-50%, -50%) translate(calc(var(--heart-x)*3),calc(var(--heart-y)*3)) scale(1) rotate(var(--heart-rot));
+                color:#fff;/* 强制保持文字颜色，不提前透明 */
+                text-shadow:0 2px 8px rgba(0,0,0,.3);/* 保持文字阴影 */
+            }
+            90%{ /* 接近爱心形态时才开始隐藏文字 */
+                color:transparent;
+                text-shadow:none;
+            }
+            100%{
+                opacity:1;
+                transform:translate(-50%, -50%) translate(var(--heart-x),var(--heart-y)) scale(1) rotate(var(--heart-rot));
+            }
+        }
+        .msg:before,.msg:after{
+            content:"";
+            position:absolute;left:50%;top:0;
+            background:inherit;border-radius:50px 50px 0 0;
+            width:24px;height:36px;opacity:0;transition:opacity .4s ease .2s;/* 延迟显示爱心，确保文字先消失 */
+            transform-origin:0 100%;transform:rotate(-45deg);
+            z-index: -1;
+        }
+        .msg:after{ left:0;transform-origin:100% 100%;transform:rotate(45deg); }
+        .msg.heart-mode{ color:transparent; text-shadow:none; }
+        .msg.heart-mode:before,.msg.heart-mode:after{ opacity:1; }
+        .msg.locked{
+            animation:none;
+            transform:translate(-50%, -50%) translate(var(--heart-x),var(--heart-y)) scale(1) rotate(var(--heart-rot));
+            opacity:1;
+        }
+        .msg.locked.pulse{ animation:pulse 2.2s ease-in-out 1; }
+        @keyframes pulse{
+            0%,100%{ transform:translate(-50%, -50%) translate(var(--heart-x),var(--heart-y)) scale(1); }
+            50% { transform:translate(-50%, -50%) translate(var(--heart-x),var(--heart-y)) scale(1.08); }
+        }
+        .msg.burst{ animation: burst 1.4s cubic-bezier(.17,.6,.2,1) forwards; }
+        @keyframes burst{
+            0%{
+                opacity:1;
+                transform:translate(-50%, -50%) translate(var(--heart-x),var(--heart-y)) scale(1);
+                filter:blur(0);
+            }
+            70%{
+                opacity:.9;
+                transform:translate(-50%,-50%) translate(calc(var(--heart-x) + var(--bx)*0.7), calc(var(--heart-y) + var(--by)*0.7)) scale(.9) rotate(var(--rot));
+                filter:blur(.3px);
+            }
+            100%{
+                opacity:0;
+                transform:translate(-50%,-50%) translate(calc(var(--heart-x) + var(--bx)), calc(var(--heart-y) + var(--by))) scale(.7) rotate(var(--rot));
+                filter:blur(1px);
+            }
+        }
+        .center-title{
+            position:absolute;left:50%;top:50%;
+            transform:translate(-50%,-50%);
+            font-weight:800;letter-spacing:.12em;
+            font-size:clamp(18px,4vmin,28px);
+            color:rgba(255,105,180,.6);
+            text-shadow:0 2px 10px rgba(255,105,180,.15);
+            opacity:0;pointer-events:none;
+            animation:titleIn 1.2s ease 0.8s both;
+        }
+        @keyframes titleIn{
+            from{opacity:0; transform:translate(-50%,-55%);}
+            to {opacity:.95; transform:translate(-50%,-50%);}
+        }
+        .replay{
+            position:absolute;right:18px;bottom:18px;
+            padding:10px 14px;border:none;border-radius:10px;
+            background:rgba(255,255,255,.5);
+            backdrop-filter:blur(8px);
+            color:#222;font-weight:600;cursor:pointer;
+            box-shadow:0 5px 20px rgba(0,0,0,.22);
+        }
+        .music-prompt {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px 30px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            font-size: 18px;
+            color: #333;
+            z-index: 1000;
+            transition: opacity 0.5s ease;
+        }
+    </style>
+</head>
+<body>
+    <audio id="background-music" src="D:\HTMLexercise\lOve\BEAUZ _ Michi - Never Over.flac" loop playsinline>
+        您的浏览器不支持音频播放
+    </audio>
+
+    <div class="music-prompt" id="music-prompt">点击页面任意位置开始播放音乐</div>
+
+    <div class="stage" id="stage">
+        <div class="center-title" id="title">for you ❤️</div>
+    </div>
+    <button class="replay" id="replay">重放</button>
+    <script>
+        const tips=[
+            '想念在风里飘','月亮为你亮','喜欢你很久了','你是我的心动','温柔落在人间',
+            '星光都为你闪','梦里有你真好','世界因你柔软','心跳为你加速','有你真好',
+            '你是独一无二的光','遇见你是浪漫的开始','晚风也温柔了','你的笑融化星河',
+            '想陪你看星星','今夜的梦给你','宇宙都在偏爱你','你是人间的奇迹'
+        ];
+        const stage = document.getElementById('stage');
+        const replay = document.getElementById('replay');
+        const title = document.getElementById('title');
+        const music = document.getElementById('background-music');
+        const musicPrompt = document.getElementById('music-prompt');
+
+        function setupMusic() {
+            function tryPlayMusic() {
+                music.play().then(() => {
+                    musicPrompt.style.opacity = '0';
+                    setTimeout(() => musicPrompt.style.display = 'none', 500);
+                    document.removeEventListener('click', tryPlayMusic);
+                    document.removeEventListener('touchstart', tryPlayMusic);
+                }).catch(error => console.log('播放失败：', error));
+            }
+            document.addEventListener('click', tryPlayMusic);
+            document.addEventListener('touchstart', tryPlayMusic);
+            replay.addEventListener('click', tryPlayMusic);
+        }
+
+        const directions = [
+            {dx:'0vw',dy:'-70vh'},{dx:'0vw',dy:'70vh'},{dx:'-70vw',dy:'0vh'},{dx:'70vw',dy:'0vh'},
+            {dx:'-60vw',dy:'-60vh'},{dx:'60vw',dy:'-60vh'},{dx:'-60vw',dy:'60vh'},{dx:'60vw',dy:'60vh'}
+        ];
+        function rand(min,max){return Math.random()*(max-min)+min;}
+        function randomGradient(){
+            const arr=[
+                ['#ff758c','#ff7eb3'],['#a18cd1','#fbc2eb'],['#6d3655','#fda085'],['#84fab0','#8fd3f4'],
+                ['#0093fb','#f5576c'],['#4fafce','#00f2fe'],['#43e97b','#38f9d7'],['#fa709a','#fee140']
+            ];
+            const [c1,c2]=arr[Math.floor(Math.random()*arr.length)];
+            return `linear-gradient(135deg,${c1},${c2})`;
+        }
+        function heartXY(t){
+            const s = 16;
+            const x = s * (16 * Math.sin(t)**3);
+            const y = -s * (13*Math.cos(t) - 5*Math.cos(2*t) - 2*Math.cos(3*t) - Math.cos(4*t));
+            return {x: x+'px', y: y+'px'};
+        }
+        function createMsg(i,total){
+            const el = document.createElement('div');
+            el.className = 'msg';
+            const d = directions[Math.floor(Math.random()*directions.length)];
+            // 调整动画参数，让下落过程更平缓，文字显示时间更长
+            el.style.setProperty('--dx', d.dx);
+            el.style.setProperty('--dy', d.dy);
+            el.style.setProperty('--rot', rand(-45,45)+'deg');
+            el.style.setProperty('--dur', rand(8,10)+'s');// 延长动画时长，给文字更多显示时间
+            el.style.setProperty('--delay', (i*0.15 + rand(0,0.4))+'s');// 减缓文字出现节奏，避免重叠
+            el.style.setProperty('--bg', randomGradient());
+            
+            const t = (i / total) * Math.PI * 2;
+            const {x,y} = heartXY(t);
+            el.style.setProperty('--heart-x', x);
+            el.style.setProperty('--heart-y', y);
+            el.style.setProperty('--heart-rot', rand(-15,15)+'deg');
+            
+            // 直接插入文字（无需额外span，减少层级问题）
+            el.textContent = tips[Math.floor(Math.random()*tips.length)];
+            
+            // 关键修复：移除"提前隐藏文字"的定时器，文字显示逻辑完全交给动画帧
+            el.addEventListener('animationend',()=>{
+                el.classList.add('locked','pulse');
+                const spread = rand(140,260);
+                const ang = rand(0,Math.PI*2);
+                el.style.setProperty('--bx', Math.cos(ang)*spread+'px');
+                el.style.setProperty('--by', Math.sin(ang)*spread+'px');
+            }, {once:true});
+            stage.appendChild(el);
+        }
+        function finalBurst(){
+            stage.querySelectorAll('.msg.locked').forEach(el=>{
+                el.classList.remove('pulse');
+                setTimeout(()=>el.classList.add('burst'), rand(0,200));
+                el.addEventListener('animationend',()=>el.remove(), {once:true});
+            });
+        }
+        function play(){
+            stage.querySelectorAll('.msg').forEach(n=>n.remove());
+            title.style.opacity = 0;
+            const TOTAL = 180;// 减少文字数量，避免重叠遮挡
+            for(let i=0;i<TOTAL;i++) createMsg(i,TOTAL);
+            setTimeout(()=>title.style.opacity = 1, 1400);
+            setTimeout(finalBurst, (10 + 0.4 + 2.2)*1000);// 匹配延长后的动画时长
+        }
+
+        setupMusic();
+        play();
+        replay.onclick = play;
+    </script>
+</body>
+</html>
